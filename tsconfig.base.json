@@ -16,7 +16,7 @@
     "target": "es2022",
     "customConditions": ["@org/source"],
     "paths": {
-      "@org/ron-ui": ["packages/ron-ui/src/index.ts"]
+      "@ron-org/ron-ui": ["packages/ron-ui/src/index.ts"]
     }
   }
 }
