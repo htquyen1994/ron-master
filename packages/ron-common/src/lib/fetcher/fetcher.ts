@@ -19,15 +19,15 @@ export interface ApiMiddleware {
 
 export abstract class ApiBaseClient {
     abstract get<T>(url: string, optional?: RequestContext): Promise<T>;
-    // abstract post<T>(url: string, payload: object, optional?: RequestContext): Promise<T>;
-    // abstract put<T>(url: string, payload: object, optional?: RequestContext): Promise<T>;
-    // abstract delete<T>(url: string, optional?: RequestContext): Promise<T>;
-    // abstract patch<T>(url: string, payload: object, optional?: RequestContext): Promise<T>;
-    // abstract transformResponse<T>(response: Response): T;
-    // abstract handlerErrorResponse(): Promise<void>
+    abstract post<T>(url: string, payload: object, optional?: RequestContext): Promise<T>;
+    abstract put<T>(url: string, payload: object, optional?: RequestContext): Promise<T>;
+    abstract delete<T>(url: string, optional?: RequestContext): Promise<T>;
+    abstract patch<T>(url: string, payload: object, optional?: RequestContext): Promise<T>;
+    abstract transformResponse<T>(response: Response): T;
+    abstract handlerErrorResponse(): Promise<void>
 }
 
-export type ConstructorType<T=unknown> = new (...args: any[]) => T;
+
 export class FactoryApiClient {
     private static instances = new WeakMapExtender<ConstructorType, InstanceType<typeof ApiBaseClient>>();
     static use<T extends ApiBaseClient>(fetcher: ConstructorType<T>) {
@@ -51,28 +51,33 @@ export class ApiClient extends ApiBaseClient {
 
     override get<T>(url: string, optional?: RequestContext): Promise<T> {
         return fetch(url).then(response => {
-            console.log("===> Response test", response);
             return Promise.resolve(response as any)
         })
     }
-    // override post<T>(url: string, payload: object, optional?: RequestContext): Promise<T> {
-    //     throw new Error("Method not implemented.");
-    // }
-    // override put<T>(url: string, payload: object, optional?: RequestContext): Promise<T> {
-    //     throw new Error("Method not implemented.");
-    // }
-    // override delete<T>(url: string, optional?: RequestContext): Promise<T> {
-    //     throw new Error("Method not implemented.");
-    // }
-    // override patch<T>(url: string, payload: object, optional?: RequestContext): Promise<T> {
-    //     throw new Error("Method not implemented.");
-    // }
-    // override transformResponse<T>(response: Response): T {
-    //     throw new Error("Method not implemented.");
-    // }
-    // override handlerErrorResponse(): Promise<void> {
-    //     throw new Error("Method not implemented.");
-    // }
+
+    override post<T>(url: string, payload: object, optional?: RequestContext): Promise<T> {
+        throw new Error("Method not implemented.");
+    }
+
+    override put<T>(url: string, payload: object, optional?: RequestContext): Promise<T> {
+        throw new Error("Method not implemented.");
+    }
+
+    override delete<T>(url: string, optional?: RequestContext): Promise<T> {
+        throw new Error("Method not implemented.");
+    }
+
+    override patch<T>(url: string, payload: object, optional?: RequestContext): Promise<T> {
+        throw new Error("Method not implemented.");
+    }
+
+    override transformResponse<T>(response: Response): T {
+        throw new Error("Method not implemented.");
+    }
+
+    override handlerErrorResponse(): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
 }
 
 // libs/core-api/src/dao/base.dao.ts
@@ -147,7 +152,6 @@ export abstract class BaseDAO {
             const method = Reflect.getMetadata(METADATA_KEYS.METHOD, prototype, name);
 
             if (path && method) {
-                // Ghi đè hàm rỗng bằng logic gọi API thật
                 const originalMethod = this[name];
                 this[name] = async (...args: any[]) => {
                     const params = Reflect.getMetadata(METADATA_KEYS.PARAMS, prototype, name) || [];
@@ -156,7 +160,6 @@ export abstract class BaseDAO {
                     let finalUrl = path;
                     let body = null;
 
-                    // Map tham số truyền vào với Decorators
                     params.forEach((p: any) => {
                         if (p.type === 'PATH') {
                             finalUrl = finalUrl.replace(`{${p.name}}`, args[p.index]);
@@ -166,12 +169,10 @@ export abstract class BaseDAO {
                         }
                     });
 
-                    // Xử lý Transform Payload
                     if (transform?.payloadToRequest) {
                         body = transform.payloadToRequest(body);
                     }
 
-                    // Thực thi gọi API
                     let response = await this.fetcher.request({
                         url: finalUrl,
                         method: method,
@@ -179,7 +180,6 @@ export abstract class BaseDAO {
                         body: body
                     });
 
-                    // Xử lý Transform Response
                     if (transform?.responseToModel) {
                         response = transform.responseToModel(response);
                     }
